@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Operating</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <style>
+        html, body{
+    height: 100%;
+}
+
+body{
+    background-image: url("http://1.bp.blogspot.com/-VVveOZE8bbM/T74lpyUhjtI/AAAAAAAAHlM/KQqVQDNARIk/s1600/high%2Bquality%2Bocean%2Bfish%2Biphone.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.dropdown-menu {
+  left: 50% !important;
+  right: auto !important;
+  text-align: center !important;
+  transform: translate(-50%, 0) !important;
+}
+
+.table{
+    margin-top: 30%;
+}
+tr, td{
+    padding:0px !important;
+}
+td {
+    border: 2px solid rgba(0,200,255,0.5) !important;
+}
+.input {
+    width: 100%;
+    margin: 0;
+    border: 0px;
+    text-align: center;
+    font-size: 30px;
+    color: rgb(0,200,255);
+    background: rgba(255,255,255,0.9)
+}
+#score{
+  color: red;
+  font-size: 20px;
+}
+
+    </style>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.8.0/math.min.js"></script>
+
+</head>
+
+<body>
+<div class="container-fluid">
+    <div class="dropdown text-center">
+        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Menu
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href="javascript:level(1);">Level 1</a></li>
+            <li><a href="javascript:level(2);">Level 2</a></li>
+            <li><a href="javascript:level(3);">Level 3</a></li>
+            <li><a href="javascript:level(4);">Level 4</a></li>
+            <li><a href="javascript:level(5);">Level 5</a></li>
+            <li> <input type="button" value="Exit" onclick="Save()"> </li>
+        </ul>
+    </div>
+    <p> <b> Your Score </b> </p>
+    <p id = "score"> <b>  0  </b> </p>
+    <div>
+        <form action='checkAction'>
+            <table id='matrix' class="table">
+            </table>
+        </form>
+        <div id='control-section' hidden = 'true'>
+            <button id='generate-new-button'>
+                <b> Generate New </b>
+            </button>
+            <button id='see-result' onclick='javascript:seeResult();'>
+                <b> See Result </b>
+            </button>
+            <button id='help' onclick='javascript:help();'> <b> Help </b> </button>
+            <label class="switch">
+                <input type="checkbox" id='doneCheckBox'> <b> Done Put Operators </b>
+                <div class="slider"></div>
+            </label>
+            <div>
+            </div>
+        </div>
+</body>
+
+<script type="text/javascript">
+    // var math = require('mathjs');
+var tableX;
+var numberTrue;
+var checkTime = 10;
+var score = 0;
+
+function level(num) {
+    $('#control-section').attr('hidden', false);
+    numberTrue = 0;
+    var innerH;
+    var createTable = function(m, n) {
+        inner = '';
+        for (i = 0; i < m; i++) {
+            inner += '<tr>';
+            for (j = 0; j < n; j++) {
+                inner += '<td class="matrix"><input type="text" name="pos' + i + j + '" onfocus="this.blur()" class="input" readOnly="true"></td>';
+            }
+            inner += '</tr>';
+        }
+        return inner;
+    }
+    switch (num) {
+        case 1:
+            innerH = createTable(3, 3);
+            break;
+        case 2:
+            innerH = createTable(4, 4);
+            break;
+        case 3:
+            innerH = createTable(5, 5);
+            break;
+        case 4:
+            innerH = createTable(6, 6);
+            break;
+        case 5:
+            innerH = createTable(7, 7);
+            break;
+    }
+    document.getElementById('matrix').innerHTML = innerH;
+    tableX = new Table('matrix');
+    tableX.randomize();
+    $(document).ready(function() {
+        $("#generate-new-button").click(function() {
+            tableX.randomize();
+            $("#doneCheckBox").attr('checked', false)
+        });
+
+
+        $('.input').click(function() {
+            if (!document.getElementById('doneCheckBox').checked) {
+                var nextVal = function(val) {
+                    switch (val) {
+                        case '':
+                            return '+';
+                        case '+':
+                            return '-';
+                        case '-':
+                            return '*';
+                        case '*':
+                            return '=';
+                        case '=':
+                            return '';
+                        default:
+                            return 'Na';
+                    }
+                }
+                var nextV = nextVal(this.value);
+                if (nextV != 'Na') this.value = nextV;
+            } else {
+                var checkInArray = function(point, points) {
+                    var equalNode = function(a, b) {
+                        return (a[0] === b[0]) && (a[1] === b[1])
+                    }
+
+                    for (var i = 0; i < points.length; i++) {
+                        if (equalNode(point, points[i]))
+                            return i;
+                    }
+                    return false;
+                }
+
+                var checkNear = function(a, b) {
+                    var x = b[0];
+                    var y = b[1];
+                    var nears = [
+                        [x + 1, y],
+                        [x, y + 1],
+                        [x - 1, y],
+                        [x, y - 1]
+                    ];
+                    if (checkInArray(a, nears) === false) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+
+                var y = this.parentNode.cellIndex
+                var x = this.parentNode.parentNode.rowIndex;
+
+                if (tableX.serie.length == 0) {
+                    this.style['background-color'] = 'green'
+                    tableX.serie.push([x, y]);
+                } else {
+                    var clickedCell = [x, y];
+                    var pos = checkInArray(clickedCell, tableX.serie);
+                    if (pos === false) {
+                        if (checkNear(clickedCell, tableX.serie[tableX.serie.length - 1])) {
+                            this.style['background-color'] = 'green';
+                            tableX.serie.push([x, y]);
+                        }
+                    }
+                    if (pos === tableX.serie.length - 1) {
+                        this.style['background-color'] = '';
+                        tableX.serie.pop();
+                    }
+                }
+
+            }
+        })
+
+        $('#doneCheckBox').click(function() {
+            tableX.serie = [];
+            $('.input').css('background-color', '');
+            if (tableX && document.getElementById('doneCheckBox').checked == false)
+                tableX.update();
+
+        })
+        w = $('.input').width();
+        $('.input').css('height', w + 'px');
+    })
+
+}
+
+
+function randomSerie(le, ri, mi, ma, vmi, vma) {
+
+    var randomSeriesUtil = function(l, mi, ma) {
+        var series = [];
+        var operator = ['+', '-', '*', '/'];
+        for (var i = 0; i < 2 * l - 1; i++) {
+            if (i % 2 == 0) {
+                series.push(random(mi, ma));
+            } else {
+                series.push(operator[random(0, 2)]);
+            }
+        }
+        return series;
+    }
+
+    var arr0 = [];
+    var sum0 = 0
+    var arr1 = [];
+    var sum1 = 0;
+    var check0 = vmi - 1;
+    var check1 = vmi - 1;
+    var ok = false;
+
+    for (var i = 0; i < 100; i++) {
+        while ((check0 < vmi) || (check0 > vma)) {
+            arr0 = randomSeriesUtil(le, mi, ma);
+            check0 = math.eval(arr0.join(''));
+        }
+        check1 = check0 - 1;
+        var k = 0;
+        while (check1 != check0) {
+            k++;
+            arr1 = randomSeriesUtil(ri, mi, ma);
+            check1 = math.eval(arr1.join(''));
+            ok = (check1 == check0)
+            if (k == 1000) {
+                break;
+            }
+        }
+        if (ok) {
+            break;
+        }
+    }
+    if (ok)
+        return arr0.concat('=').concat(arr1);
+    else
+    // @@ Bug may occur.
+        alert('False Random');
+}
+
+function Table(id) {
+
+    this.tableId = id;
+    this.table = document.getElementById(id);
+    this.serie = [];
+
+    this.m = 0;
+    this.n = 0;
+    this.elements = undefined;
+
+    this.get = function(i, j) {
+        return this.elements[i * this.n + j];
+    };
+
+    this.set = function(i, j, value) {
+        this.elements[i * this.n + j] = value;
+    };
+
+
+
+    this.parse = function() {
+        this.m = this.table.rows.length;
+        this.n = this.m;
+        this.elements = new Array(this.m * this.n);
+        for (i = 0; i < this.m; i++) {
+            for (j = 0; j < this.n; j++) {
+                value = this.table.rows[i].cells[j].childNodes[0].value;
+                if (value) {
+                    this.set(i, j, value);
+                }
+            }
+        }
+    }
+
+    this.update = function() {
+        for (i = 0; i < this.m; i++) {
+            for (j = 0; j < this.n; j++) {
+                var v = this.get(i, j);
+                if(v == undefined){
+                    this.table.rows[i].cells[j].childNodes[0].value = '';
+                }else{
+                    this.table.rows[i].cells[j].childNodes[0].value = v;
+                }
+            }
+        }
+    }
+
+    this.parse();
+
+
+    this.putArrayRandomly = function(arr) {
+        // Return an array contains ordered points to put arr into matrix.
+        // Return false if can't put to matrix.
+        var x_root, y_root;
+        var len = arr.length;
+        var x = new Array(len);
+        var y = new Array(len);
+
+        var ok = false; // ok: k co kha nang put arr vao ma tran.
+
+        // kiểm tra xem co put dược một random series vào matrix hay k với x_root, y_root. Thử 20 lần put.
+        for (var timeCheckRandomRoot = 0; timeCheckRandomRoot < 5; timeCheckRandomRoot++) {
+
+            x_root = random(0, this.m - 1);
+            y_root = random(0, this.n - 1);
+            x[0] = x_root;
+            y[0] = y_root;
+
+            var checkThisRoot = false;
+            for (var i = 0; i < 10; i++) {
+
+                // Check 20 lần put arr tại một điểm.
+                var grid = math.zeros(this.m, this.n);
+                grid.subset(math.index(x[0], y[0]), 1);
+                for (var j = 1; j < len; j++) {
+                    beforePoint = [x[j - 1], y[j - 1]];
+                    var nPoint = getRandomNextPoint(beforePoint, grid);
+                    if (nPoint === false) {
+                        break;
+                    }
+                    x[j] = nPoint[0];
+                    y[j] = nPoint[1];
+                    grid.subset(math.index(x[j], y[j]), 1)
+                    if (j == len - 1) {
+                        checkThisRoot = true;
+                    }
+                }
+                if (checkThisRoot) {
+                    break;
+                }
+            }
+            if (checkThisRoot) {
+                ok = true;
+                break;
+            }
+        }
+
+        if (ok) {
+            return [x, y];
+        } else {
+            return false;
+        }
+
+    }
+
+    this.updateValue = function(points, arr) {
+        //clear elements
+        for (var i = 0; i < this.elements.length; i++) {
+            this.elements[i] = '';
+        }
+        var len = arr.length;
+        for (var i = 0; i < len; i++) {
+            if (i % 2 == 0)
+                this.set(points[0][i], points[1][i], arr[i]);
+        }
+    }
+
+    this.randomize = function() {
+        this.serie = [];
+        var serie;
+        switch (this.m) {
+            case 3:
+                serie = randomSerie(2, 2, 1, 20, 0, 40);
+                break;
+            case 4:
+                switch (random(0, 2)) {
+                    case 0:
+                        serie = randomSerie(3, 2, 1, 20, 0, 50)
+                        break;
+
+                    case 1:
+                        serie = randomSerie(2, 3, 1, 20, 0, 50)
+                        break;
+                    case 2:
+                        serie = randomSerie(4, 2, 1, 20, 0, 50)
+                }
+                break;
+            case 5:
+                switch (random(0, 2)) {
+                    case 0:
+                        serie = randomSerie(4, 4, 1, 20, 0, 60)
+                        break;
+
+                    case 1:
+                        serie = randomSerie(5, 3, 1, 20, 0, 60)
+                        break;
+                    case 2:
+                        serie = randomSerie(2, 6, 1, 20, 0, 50)
+                }
+                break;
+            case 6:
+                switch (random(0, 2)) {
+                    case 0:
+                        serie = randomSerie(5, 5, 1, 20, 0, 50)
+                        break;
+
+                    case 1:
+                        serie = randomSerie(4, 6, 1, 20, 0, 50)
+                        break;
+                    case 2:
+                        serie = randomSerie(3, 7, 1, 20, 0, 50)
+                }
+                break;
+            case 7:
+                switch (random(0, 2)) {
+                    case 0:
+                        serie = randomSerie(9, 9, 1, 20, 0, 150)
+                        break;
+
+                    case 1:
+                        serie = randomSerie(8, 10, 1, 20, 0, 150)
+                        break;
+                    case 2:
+                        serie = randomSerie(7, 11, 1, 20, 0, 150)
+                }
+                break;
+        }
+
+        console.log(serie);
+        helps = serie;
+        poss = this.putArrayRandomly(serie);
+        if (!poss) {
+            alert('Error Occured')
+        } else {
+            this.updateValue(poss, serie);
+            this.update();
+            // for (var input of document.getElementsByClassName('input')) {
+            //     input.style['background-color'] = '';
+            // }
+            $('.input').css('background-color', '');
+        }
+    }
+
+    this.getExpression = function(points) {
+        this.parse();
+        var expressions = [];
+        for (var i = 0; i < points.length; i++) {
+            var p = points[i];
+            expressions.push(this.get(p[0], p[1]));
+        }
+        return expressions;
+    }
+
+    this.checkTable = function(points) {
+        if (2 * this.countNum() - 1 != points.length)
+            return false;
+        var check = function(arr) {
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i] == undefined) return false;
+            }
+            var equal = arr.indexOf('=');
+            if (equal == -1) {
+                return false;
+            }
+            var left = arr.slice(0, equal);
+            var right = arr.slice(equal + 1);
+            try {
+                var leftValue = math.eval(left.join(''));
+                var rightValue = math.eval(right.join(''));
+            } catch (error) {
+                return false;
+            }
+            return rightValue == leftValue;
+        }
+
+        var expression = this.getExpression(points);
+        return check(expression);
+    }
+
+    this.countNum = function() {
+        var count = 0;
+        for (var i = 0; i < this.m; i++) {
+            for (var j = 0; j < this.n; j++) {
+                var value = this.table.rows[i].cells[j].childNodes[0].value
+                if (!isNaN(value) && (value != '')) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+}
+
+
+function getRandomNextPoint(point, grid) {
+    // grid là ma trận nếu đã có điểm ở trước thì có giá trị 1 ngược lại nếu là 0.
+    // return một điểm random bên cạnh điểm đã cho
+    // return false nếu không thể chọn được điểm bên cạnh còn trống
+    var x = point[0];
+    var y = point[1];
+    directions = random4();
+    var check = false;
+    var nextPoint;
+    for (i = 0; i < 4; i++) {
+        nextPoint = next(point, directions[i]);
+        check = checkInGrid(nextPoint, grid);
+        if (check) {
+            break;
+        }
+    }
+    if (check) {
+        return nextPoint;
+    } else {
+        return false;
+    }
+
+}
+
+function random4() {
+    var fours = [
+        [1, 2, 3, 4],
+        [1, 2, 4, 3],
+        [1, 3, 2, 4],
+        [1, 3, 4, 2],
+        [1, 4, 2, 3],
+        [1, 4, 3, 2],
+        [2, 1, 3, 4],
+        [2, 1, 4, 3],
+        [2, 3, 1, 4],
+        [2, 3, 4, 1],
+        [2, 4, 1, 3],
+        [2, 4, 3, 1],
+        [3, 1, 2, 4],
+        [3, 1, 4, 2],
+        [3, 2, 1, 4],
+        [3, 2, 4, 1],
+        [3, 4, 1, 2],
+        [3, 4, 2, 1],
+        [4, 1, 2, 3],
+        [4, 1, 3, 2],
+        [4, 2, 1, 3],
+        [4, 2, 3, 1],
+        [4, 3, 1, 2],
+        [4, 3, 2, 1]
+    ];
+    return fours[random(1, 24) - 1];
+}
+
+function next(point, direction) {
+    var x = point[0];
+    var y = point[1];
+    switch (direction) {
+        case 1:
+            return [x - 1, y];
+
+        case 2:
+            return [x, y + 1];
+
+        case 3:
+            return [x + 1, y];
+
+        case 4:
+            return [x, y - 1];
+
+    }
+}
+
+function checkInGrid(point, grid) {
+    var x = point[0];
+    var y = point[1];
+    var size = grid.size();
+    if (x < 0 || x >= size[0] || y < 0 || y >= size[1]) {
+        return false;
+    }
+    if (grid.subset(math.index(x, y)) == 1) {
+        return false;
+    }
+    return true;
+}
+
+function random(mi, ma) {
+    var a = Math.floor(mi + (ma - mi + 1) * Math.random());
+    if (a == ma + 1) {
+        a = ma;
+    }
+    return a;
+}
+
+function seeResult() {
+    if (tableX == undefined) {
+        alert('Nothing to see here');
+    } else {
+        var result = tableX.checkTable(tableX.serie);
+        if (result) {
+            numberTrue++;
+            /* switch(Table(id)){
+                case 1:
+                  score +=100;
+                  document.getElementById("score").innerHTML = score;
+                  break;
+                case 2:
+                  score +=300;
+                  document.getElementById("score").innerHTML = score;
+                  break;
+                case 3:
+                  score +=500;
+                  document.getElementById("score").innerHTML = score;
+                  break;
+                case 4:
+                  score +=1000;
+                  document.getElementById("score").innerHTML = score;
+                  break;
+                case 5:
+                  score +=2000;
+                  document.getElementById("score").innerHTML = score;
+                  break;
+            } */
+            score +=100;
+            document.getElementById("score").innerHTML = score;
+            alert('You are incredible');
+            if (numberTrue == checkTime && tableX.m < 7) {
+                level(tableX.m - 1);
+                $("#doneCheckBox").attr('checked', false)
+            }
+            tableX.randomize();
+            $("#doneCheckBox").attr('checked', false)
+        } else {
+            alert('You are wrong! Try again.')
+        }
+    }
+}
+
+function help(){
+    alert(helps);
+}
+function Save() {
+
+    window.location= "/score=" + score;
+}
+</script>
+
+</html>
