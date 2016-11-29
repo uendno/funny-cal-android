@@ -117,6 +117,9 @@ public class MainActivity extends AppCompatActivity {
 
                                 } else {
                                     if (response.code() == 401) {
+                                        SharedPreferences.Editor prefsEditor = mPrefs.edit();
+                                        prefsEditor.putString("my_profile", "");
+                                        prefsEditor.commit();
                                         Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                                         startActivity(intent);
                                     } else {
@@ -130,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
+                    } else {
+                        finish();
                     }
 
                     return true;

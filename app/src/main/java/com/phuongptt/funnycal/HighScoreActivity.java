@@ -65,6 +65,10 @@ public class HighScoreActivity extends AppCompatActivity {
                 } else {
 
                     if (response.code() == 401) {
+                        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        SharedPreferences.Editor prefsEditor = mPrefs.edit();
+                        prefsEditor.putString("my_profile", "");
+                        prefsEditor.commit();
                         Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                         startActivity(intent);
                     } else {
